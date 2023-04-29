@@ -35,7 +35,6 @@ public class ClienteServiceImpl implements ClienteService {
 
 	@Override
 	public Iterable<Cliente> buscarTodos() {
-		// Buscar todos os Clientes.
 		return clienteRepository.findAll();
 	}
 
@@ -48,7 +47,14 @@ public class ClienteServiceImpl implements ClienteService {
 
 	@Override
 	public void inserir(Cliente cliente) {
-		salvarClienteComCep(cliente);
+		String cep = cliente.getEndereco().getCep();
+		Endereco endereco = enderecoRepository.findById(cep).orElseGet(() ->{
+			Endereco novoEndereco = viaCepService.consultarCep(cep);
+			enderecoRepository.save(novoEndereco);
+			return novoEndereco;
+		});
+		cliente.setEndereco(endereco);
+		clienteRepository.save(cliente);
 	}
 
 	@Override
@@ -56,6 +62,7 @@ public class ClienteServiceImpl implements ClienteService {
 		// Buscar Cliente por ID, caso exista:
 		Optional<Cliente> clienteBd = clienteRepository.findById(id);
 		if (clienteBd.isPresent()) {
+
 			salvarClienteComCep(cliente);
 		}
 	}
